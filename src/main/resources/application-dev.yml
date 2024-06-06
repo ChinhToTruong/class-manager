@@ -1,0 +1,21 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+openapi:
+  service:
+    api-docs: api-service
+    server: http://localhost:${server.port}
+    title: API Document
+    version: 1.0.0
+
+jwt:
+  timeout: 360000
+  timeoutRefresh: 10800000
+  securityKey: 0e238635bcbfa8875c922ac43071877a21cd8890f297ab9cdbd2968aff95a475
