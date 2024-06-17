@@ -35,10 +35,10 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     @Temporal(TemporalType.DATE)
     private Date dateOfBirth;
 
-    @Column(name = "phone")
+    @Column(name = "phone", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String phone;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String email;
 
     @Column(name = "username", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
@@ -105,13 +105,5 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
         return UserDetails.super.isEnabled();
     }
 
-    public void saveAddress(Address address) {
-        if (address != null) {
-            if (addresses == null) {
-                addresses = new HashSet<>();
-            }
-            addresses.add(address);
-            address.setUser(this); // save user_id
-        }
-    }
+
 }

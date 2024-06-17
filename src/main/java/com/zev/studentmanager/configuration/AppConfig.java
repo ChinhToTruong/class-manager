@@ -1,11 +1,14 @@
 package com.zev.studentmanager.configuration;
 
+import com.zev.studentmanager.Auditing.ApplicationAuditing;
 import com.zev.studentmanager.service.UserService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,12 +27,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @Profile("!prod")
 @RequiredArgsConstructor
+@EnableJpaAuditing
 public class AppConfig {
     private final UserService userService;
     private final PreFilter preFilter;
 
     private final String[] WHITE_LIST = {
-      "/auth/**"
+      "/auth/**","/user/**"
     };
 
 
@@ -89,5 +93,11 @@ public class AppConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return webSecurity -> webSecurity.ignoring()
                 .requestMatchers("/v3/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**");
+    }
+
+    // auditing configuration
+    @Bean
+    public AuditorAware<Long> auditorAware(){
+        return new ApplicationAuditing();
     }
 }
