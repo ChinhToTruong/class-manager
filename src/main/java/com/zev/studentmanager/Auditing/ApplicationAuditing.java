@@ -21,6 +21,6 @@ public class ApplicationAuditing implements AuditorAware<Long> {
             return Optional.empty();
         }
         User user = (User) authentication.getPrincipal();
-        return Optional.ofNullable(user.getId());
+        return Optional.empty();
     }
 }

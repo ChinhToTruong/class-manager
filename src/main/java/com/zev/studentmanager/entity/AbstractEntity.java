@@ -1,5 +1,6 @@
 package com.zev.studentmanager.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,11 +20,8 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = { "createdBy", "createdAt", "updatedBy", "updatedDate" }, allowGetters = true)
 public class AbstractEntity<T extends Serializable> implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    T id;
 
     @CreatedBy
     @Column(

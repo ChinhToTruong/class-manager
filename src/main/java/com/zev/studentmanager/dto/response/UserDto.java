@@ -36,5 +36,5 @@ public class UserDto {
 
     private String status;
 
-    private Set<AddressDto> addresses;
+//    private Set<Address> addresses;
 }

@@ -16,6 +16,11 @@ import java.util.Set;
 @Entity(name = "Group")
 @Table(name = "tbl_group")
 public class Group extends AbstractEntity<Integer> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Integer id;
+
     private String name;
 
     private String description;

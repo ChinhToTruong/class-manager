@@ -24,6 +24,11 @@ import java.util.Set;
 @Entity(name = "User")
 @Table(name = "tbl_user")
 public class User extends AbstractEntity<Long> implements UserDetails, Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Long id;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -86,6 +91,16 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     }
 
     @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return  password;
+    }
+
+    @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();
     }
@@ -104,6 +119,5 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
-
 
 }

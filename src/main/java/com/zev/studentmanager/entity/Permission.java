@@ -16,6 +16,11 @@ import java.util.Set;
 @Entity(name = "Permission")
 @Table(name = "tbl_permission")
 public class Permission extends AbstractEntity<Integer> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Integer id;
+
     private String name;
 
     private String description;

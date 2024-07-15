@@ -12,6 +12,10 @@ import lombok.*;
 @Entity(name = "Address")
 @Table(name = "tbl_address")
 public class Address extends AbstractEntity<Long> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Long id;
     @Column(name = "apartment_number")
     private String apartmentNumber;
 

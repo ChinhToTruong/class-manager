@@ -27,7 +27,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @Profile("!prod")
 @RequiredArgsConstructor
-@EnableJpaAuditing
 public class AppConfig {
     private final UserService userService;
     private final PreFilter preFilter;
@@ -97,7 +96,7 @@ public class AppConfig {
 
     // auditing configuration
     @Bean
-    public AuditorAware<Long> auditorAware(){
+    public AuditorAware<Long> auditorAware() {
         return new ApplicationAuditing();
     }
 }

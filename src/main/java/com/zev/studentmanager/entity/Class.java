@@ -13,6 +13,11 @@ import java.util.Set;
 @Entity(name = "Class")
 @Table(name = "tbl_class")
 public class Class extends AbstractEntity<Long>{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Integer id;
+
     @Column(name = "class_name")
     private String name;
 

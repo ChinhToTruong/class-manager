@@ -5,7 +5,6 @@ import com.zev.studentmanager.dto.request.RefreshTokenRequest;
 import com.zev.studentmanager.dto.request.RegisterRequest;
 import com.zev.studentmanager.dto.request.SignInRequest;
 import com.zev.studentmanager.dto.response.TokenResponse;
-import com.zev.studentmanager.dto.response.UserDto;
 import com.zev.studentmanager.entity.User;
 import com.zev.studentmanager.repository.UserRepository;
 import com.zev.studentmanager.service.AuthenticationService;

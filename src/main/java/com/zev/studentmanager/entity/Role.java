@@ -16,8 +16,15 @@ import java.util.Set;
 @Entity(name = "Role")
 @Table(name = "tbl_role")
 public class Role extends AbstractEntity<Integer> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Integer id;
+
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "description")
     private String description;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
