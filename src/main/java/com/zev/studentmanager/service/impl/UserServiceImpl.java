@@ -1,54 +1,66 @@
 package com.zev.studentmanager.service.impl;
 
+import com.zev.studentmanager.dto.request.ChangePasswordRequest;
+import com.zev.studentmanager.dto.request.RegisterRequest;
 import com.zev.studentmanager.dto.request.UpdateUserInfoRequest;
 import com.zev.studentmanager.dto.response.PageResponse;
 import com.zev.studentmanager.dto.response.UserDto;
 import com.zev.studentmanager.entity.User;
+import com.zev.studentmanager.enums.MessageCode;
 import com.zev.studentmanager.mapper.UserMapper;
-import com.zev.studentmanager.repository.AddressRepository;
+import com.zev.studentmanager.repository.RoleRepository;
 import com.zev.studentmanager.repository.UserRepository;
 import com.zev.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.management.relation.RoleNotFoundException;
 
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Log4j2
 public class UserServiceImpl implements UserService {
 
 
     private final UserRepository userRepository;
-
-    private final AddressRepository addressRepository;
-
     private final UserMapper userMapper;
 
 
     @Override
     public UserDetailsService userDetailsService() {
-
         log.info("----- get user details -----");
-        return username -> userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("user not found"));
-
-
+        return username -> userRepository.findByUsername(username)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found:" + username)
+                );
     }
 
     @Override
+    @PostAuthorize("returnObject.username == authentication.name")
     public void updateUserInformation(UpdateUserInfoRequest request, Long userId) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("user not found"));
-        updateInforUser(request, user);
+        var user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found: "+ userId)
+                );
+        updateInfoUser(request, user);
     }
 
     @Override
     public UserDto getUserById(Long id) {
         log.info("----- get user by id: {}", id);
-        var user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("user not found"));
+        var user = userRepository.findById(id)
+                .orElseThrow(
+                    () -> new UsernameNotFoundException("user not found: " + id)
+                );
         return userMapper.toDto(user);
     }
 
@@ -59,20 +71,19 @@ public class UserServiceImpl implements UserService {
             var user = getById(id);
             user.setDeleted(true);
             userRepository.save(user);
-            log.info("----- soft delete user successfully -----");
         }
         catch (Exception e){
-            throw new RuntimeException(e);
+            throw new RuntimeException(MessageCode.FAILURE.getMessage() + e);
         }
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ALL')")
     public void deleteUser(Long id) {
         try{
             log.info("----- delete user by id: {} -----", id);
             var user = getById(id);
             userRepository.delete(user);
-            log.info("----- delete user successfully -----");
         }
         catch (Exception e){
             throw new RuntimeException(e);
@@ -103,13 +114,28 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    private User getById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    @Override
+    @PostAuthorize("returnObject.username == authentication.name")
+    public void changePassword(ChangePasswordRequest request, Long userId) {
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found: "+ userId)
+                );
+
+        user.setPassword(request.getNewPassword());
+
+        userRepository.save(user);
     }
 
-    private void updateInforUser(UpdateUserInfoRequest  request, User user) {
+
+    private User getById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found: "+ id));
+    }
+
+    private void updateInfoUser(UpdateUserInfoRequest  request, User user) {
         // update user information here
-        user.setAddresses(request.getAddresses());
+        user.setAddress(request.getAddress());
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -118,4 +144,7 @@ public class UserServiceImpl implements UserService {
         user.setGender(request.getGender());
         userRepository.save(user);
     }
+
+
+
 }

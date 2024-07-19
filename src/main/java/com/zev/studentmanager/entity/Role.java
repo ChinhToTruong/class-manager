@@ -1,10 +1,7 @@
 package com.zev.studentmanager.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,13 +12,14 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity(name = "Role")
 @Table(name = "tbl_role")
-public class Role extends AbstractEntity<Integer> {
+@Builder
+public class Role extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    Integer id;
+    private Integer id;
 
-    @Column(name = "name")
+    @Column(name = "name",  unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String name;
 
     @Column(name = "description")
@@ -34,9 +32,4 @@ public class Role extends AbstractEntity<Integer> {
     )
     private Set<Permission> permissions = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE,mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE,mappedBy = "role")
-    private Set<Group> groups = new HashSet<>();
 }

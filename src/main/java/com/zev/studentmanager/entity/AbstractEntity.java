@@ -20,19 +20,19 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = { "createdBy", "createdAt", "updatedBy", "updatedDate" }, allowGetters = true)
-public class AbstractEntity<T extends Serializable> implements Serializable {
+@JsonIgnoreProperties(value = {"createdAt"}, allowGetters = true)
+public class AbstractEntity implements Serializable {
 
-    @CreatedBy
-    @Column(
-            name = "created_by",
-            updatable = false
-    )
-    T createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by", insertable = false)
-    T updatedBy;
+//    @CreatedBy
+//    @Column(
+//            name = "created_by",
+//            updatable = false
+//    )
+//    String createdBy;
+//
+//    @LastModifiedBy
+//    @Column(name = "updated_by", insertable = false)
+//    String updatedBy;
 
     @Column(
             name = "created_at",
@@ -43,11 +43,11 @@ public class AbstractEntity<T extends Serializable> implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     Date createdAt;
 
-    @Column(
-            name = "updated_at",
-            insertable = false
-    )
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    Date updatedAt;
+//    @Column(
+//            name = "updated_at",
+//            insertable = false
+//    )
+//    @UpdateTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    Date updatedAt;
 }

@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
+
 @Slf4j
 @RequiredArgsConstructor
 public class PreFilter extends OncePerRequestFilter {
@@ -31,7 +31,6 @@ public class PreFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        log.info(("---------- PreFilter ----------"));
 
         final String authorization = request.getHeader("Authorization");
 //        log.info("Authorization: {}", authorization);

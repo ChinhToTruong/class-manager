@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Entity(name = "Address")
 @Table(name = "tbl_address")
-public class Address extends AbstractEntity<Long> {
+public class Address extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -40,8 +40,4 @@ public class Address extends AbstractEntity<Long> {
     @Column(name = "address_type")
     private Integer addressType;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_id")
-    private User user;
 }

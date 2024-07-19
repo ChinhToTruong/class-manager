@@ -1,11 +1,14 @@
 package com.zev.studentmanager.service;
 
+import com.zev.studentmanager.dto.request.ChangePasswordRequest;
+import com.zev.studentmanager.dto.request.RegisterRequest;
 import com.zev.studentmanager.dto.request.UpdateUserInfoRequest;
 import com.zev.studentmanager.dto.response.PageResponse;
 import com.zev.studentmanager.dto.response.UserDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import javax.management.relation.RoleNotFoundException;
 import java.util.List;
 
 public interface UserService {
@@ -20,4 +23,7 @@ public interface UserService {
     PageResponse<?> getActiveUsers(Pageable pageable);
 
     UserDto getUserById(Long id);
+
+    void changePassword(ChangePasswordRequest request, Long userId);
+
 }

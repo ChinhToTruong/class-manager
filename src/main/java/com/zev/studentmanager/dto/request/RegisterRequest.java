@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
+import java.util.Set;
+
 @Getter
 public class RegisterRequest {
 
@@ -16,12 +18,13 @@ public class RegisterRequest {
     @NotBlank(message = "username cannot be null")
     String username;
 
-    @Schema(defaultValue = "C@#!h299")
+    @Schema(defaultValue = "Admin123@")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[\\w!@#$%^&*(),.?\":{}|<>]{8,}$",
             message = "password must include one upper case letter, one number, one special character")
     @NotBlank(message = "password cannot be null")
     String password;
 
-//    @NotNull(message = "role cannot be null")
-//    Role role;
+    @NotNull(message = "role cannot be null")
+    @Schema(defaultValue = "[1]")
+    private Integer role;
 }

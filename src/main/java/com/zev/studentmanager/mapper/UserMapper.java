@@ -8,7 +8,10 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(
         config = MapperConfig.class,
-        uses = {UserMapper.class}
+        uses = {
+                UserMapper.class,
+                RoleMapper.class
+        }
 )
 public interface UserMapper extends EntityMapper<User, UserDto>   {
 
