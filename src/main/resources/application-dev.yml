@@ -15,7 +15,8 @@ openapi:
     title: API Document
     version: 1.0.0
 
+
 jwt:
   timeout: 360000
   timeoutRefresh: 10800000
-  securityKey: 0e238635bcbfa8875c922ac43071877a21cd8890f297ab9cdbd2968aff95a475
+  securityKey: 2dae84f846e4f4b158a8d26681707f4338495bc7ab68151d7f7679cc5e56202dd3da0d356da007a7c28cb0b780418f4f3246769972d6feaa8f610c7d1e7ecf6a

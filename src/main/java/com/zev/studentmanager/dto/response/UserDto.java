@@ -1,17 +1,10 @@
 package com.zev.studentmanager.dto.response;
 
-import com.zev.studentmanager.entity.Address;
-import com.zev.studentmanager.entity.enums.Gender;
-import com.zev.studentmanager.entity.enums.UserStatus;
-import com.zev.studentmanager.entity.enums.UserType;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -36,5 +29,5 @@ public class UserDto {
 
     private String status;
 
-    private Set<AddressDto> addresses;
+    private String address;
 }

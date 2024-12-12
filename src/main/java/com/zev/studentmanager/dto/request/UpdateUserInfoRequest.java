@@ -1,12 +1,10 @@
 package com.zev.studentmanager.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zev.studentmanager.entity.Address;
-import com.zev.studentmanager.entity.enums.Gender;
+import com.zev.studentmanager.enums.Gender;
 import com.zev.studentmanager.validator.ValueOfEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
@@ -50,5 +48,5 @@ public class UpdateUserInfoRequest {
     @Schema(defaultValue = "MALE")
     private String gender;
 
-    private Set<Address> addresses;
+    private String address;
 }

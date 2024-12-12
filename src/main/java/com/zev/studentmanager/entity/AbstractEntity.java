@@ -1,5 +1,6 @@
 package com.zev.studentmanager.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -17,27 +19,35 @@ import java.util.Date;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @MappedSuperclass
-public class AbstractEntity<T extends Serializable> implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    T id;
+@EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = {"createdAt"}, allowGetters = true)
+public class AbstractEntity implements Serializable {
 
-    @CreatedBy
-    @Column(name = "created_by")
-    T createdBy;
+//    @CreatedBy
+//    @Column(
+//            name = "created_by",
+//            updatable = false
+//    )
+//    String createdBy;
+//
+//    @LastModifiedBy
+//    @Column(name = "updated_by", insertable = false)
+//    String updatedBy;
 
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    T updatedBy;
-
-    @Column(name = "created_at")
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     Date createdAt;
 
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    Date updatedAt;
+//    @Column(
+//            name = "updated_at",
+//            insertable = false
+//    )
+//    @UpdateTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    Date updatedAt;
 }

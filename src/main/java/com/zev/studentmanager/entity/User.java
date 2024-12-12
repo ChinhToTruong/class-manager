@@ -1,20 +1,19 @@
 package com.zev.studentmanager.entity;
 
-import com.zev.studentmanager.entity.enums.Gender;
-import com.zev.studentmanager.entity.enums.UserStatus;
-import com.zev.studentmanager.entity.enums.UserType;
+import com.zev.studentmanager.enums.Gender;
+import com.zev.studentmanager.enums.UserStatus;
+import com.zev.studentmanager.enums.UserType;
 import com.zev.studentmanager.validator.ValueOfEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -23,7 +22,12 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity(name = "User")
 @Table(name = "tbl_user")
-public class User extends AbstractEntity<Long> implements UserDetails, Serializable {
+public class User extends AbstractEntity implements UserDetails, Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Long id;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -35,10 +39,10 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     @Temporal(TemporalType.DATE)
     private Date dateOfBirth;
 
-    @Column(name = "phone")
+    @Column(name = "phone", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String phone;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     private String email;
 
     @Column(name = "username", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
@@ -63,26 +67,29 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     @Column(name = "deleted")
     private boolean deleted;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
-    private Set<Address> addresses = new HashSet<>();
+    private String address;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JoinTable(name = "tbl_user_has_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    @OneToOne
+    private Role role;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JoinTable(name = "tbl_user_has_group",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
-    private Set<Group> groups = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+
+        return role.getPermissions()
+               .stream()
+               .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+               .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return  password;
     }
 
     @Override
@@ -105,13 +112,4 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
         return UserDetails.super.isEnabled();
     }
 
-    public void saveAddress(Address address) {
-        if (address != null) {
-            if (addresses == null) {
-                addresses = new HashSet<>();
-            }
-            addresses.add(address);
-            address.setUser(this); // save user_id
-        }
-    }
 }

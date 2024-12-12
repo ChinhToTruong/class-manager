@@ -1,4 +1,4 @@
-package com.zev.studentmanager.entity.enums;
+package com.zev.studentmanager.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

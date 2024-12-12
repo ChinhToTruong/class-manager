@@ -2,8 +2,9 @@ package com.zev.studentmanager.controller;
 
 import com.zev.studentmanager.dto.request.RefreshTokenRequest;
 import com.zev.studentmanager.dto.request.RegisterRequest;
-import com.zev.studentmanager.dto.request.SignInRequest;
+import com.zev.studentmanager.dto.request.AuthenticationRequest;
 import com.zev.studentmanager.dto.response.ApiResponse;
+import com.zev.studentmanager.enums.MessageCode;
 import com.zev.studentmanager.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,12 +13,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/auth")
+import javax.management.relation.RoleNotFoundException;
+
+@RequestMapping("/authenticate")
 @RequiredArgsConstructor
 @Validated
 @Slf4j
@@ -32,10 +32,11 @@ public class AuthenticationController {
             description = "This API will return access token and refresh token"
     )
     @PostMapping("/access")
-    public ResponseEntity<?> login(@RequestBody @Valid SignInRequest request){
-        log.info("------ get access token and refresh token ------");
+    public ResponseEntity<?> login(@RequestBody @Valid AuthenticationRequest request){
 
         return ApiResponse.build()
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withSuccess(true)
                 .withData(authenticationService.authentication(request))
                 .toEntity();
     }
@@ -45,27 +46,43 @@ public class AuthenticationController {
             description = "This API use to register new user"
     )
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest request){
-        log.info("------ register new user: {} ------", request.getUsername());
-        try{
-            authenticationService.register(request);
-            return ApiResponse.build()
-                    .withMessage("create user successfully")
-                    .toEntity();
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest request) throws RoleNotFoundException {
+        authenticationService.register(request);
+        return ApiResponse.build()
+                .withSuccess(true)
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withMessage(MessageCode.SUCCESS.getMessage())
+                .toEntity();
 
-        }catch (Exception e){
-            return ApiResponse.build()
-                    .withCode(201)
-                    .withSuccess(false)
-                    .withMessage("create user failed")
-                    .toEntity();
-        }
     }
 
+    @Operation(
+            summary = "refresh",
+            description = "This API use to refresh token"
+    )
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody @Valid RefreshTokenRequest request){
         return ApiResponse.build()
+                .withSuccess(true)
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .withData(authenticationService.refreshToken(request))
+                .toEntity();
+    }
+
+
+    @Operation(
+            summary = "logout",
+            description = "This API use to logout"
+    )
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(){
+        authenticationService.logout();
+
+        return ApiResponse.build()
+                .withSuccess(true)
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .toEntity();
     }
 }

@@ -1,7 +1,11 @@
 package com.zev.studentmanager.controller;
 
+import com.zev.studentmanager.annotation.PageableParam;
+import com.zev.studentmanager.dto.request.ChangePasswordRequest;
+import com.zev.studentmanager.dto.request.RegisterRequest;
 import com.zev.studentmanager.dto.request.UpdateUserInfoRequest;
 import com.zev.studentmanager.dto.response.ApiResponse;
+import com.zev.studentmanager.enums.MessageCode;
 import com.zev.studentmanager.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,14 +13,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.management.relation.RoleNotFoundException;
+
 @RestController
 @RequestMapping("/user")
-@Log4j
+@Log4j2
 @Tag(name = "User Controller")
 @RequiredArgsConstructor
 public class UserController {
@@ -27,14 +34,14 @@ public class UserController {
           description = "Api get list user"
     )
     @GetMapping
-    public ResponseEntity<?> getUsers(Pageable pageable) {
-        log.info("----------- get users -----------");
-
+    @PageableParam
+    public ResponseEntity<?> getUsers(@Parameter(hidden = true) Pageable pageable) {
         return ApiResponse.build()
-                .withMessage("get users successfully")
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .withData(userService.getUsers(pageable))
                 .toEntity();
     }
+
 
     @Operation(
             summary = "update user",
@@ -42,30 +49,32 @@ public class UserController {
             parameters = {@Parameter(name = "id", description = "the id of the user",example = "1")}
     )
     @PutMapping("/update/{id}")
-    public void updateUserInformation(@Valid @RequestBody UpdateUserInfoRequest request,
-                                      @PathVariable(name = "id") @Min(1) Long id){
+    public ResponseEntity<?> updateUserInformation(
+            @Valid @RequestBody UpdateUserInfoRequest request,
+            @PathVariable(name = "id") @Min(1) Long id
+    ){
 
-        log.info("---------- update user -------------");
 
-        try{
-            userService.updateUserInformation(request, id);
-        }
-        catch (Exception e){
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
+        userService.updateUserInformation(request, id);
+        return ApiResponse.build()
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withSuccess(true)
+                .withMessage(MessageCode.SUCCESS.getMessage())
+                .toEntity();
+
     }
 
     @Operation(
             summary = "get active user",
             description = "Api get active user information"
     )
+    @PageableParam
     @GetMapping("/active")
-    public ResponseEntity<?> getActiveUser(Pageable pageable) {
-        log.info("----------- get users -----------");
+    public ResponseEntity<?> getActiveUser(@Parameter(hidden = true) Pageable pageable) {
 
         return ApiResponse.build()
-                .withMessage("get users successfully")
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .withData(userService.getActiveUsers(pageable))
                 .toEntity();
     }
@@ -76,19 +85,13 @@ public class UserController {
     )
     @DeleteMapping("/soft-delete/{id}")
     public ResponseEntity<?> deleteSoftUserById(@PathVariable(name = "id") @Min(1) Long id) {
-        log.info("---------- delete soft user by id -------------");
-
-        try{
-            userService.deleteSoftUserById(id);
-        }
-        catch (Exception e){
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
+        userService.deleteSoftUserById(id);
         return ApiResponse.build()
-                .withMessage("soft-delete users successfully")
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withSuccess(true)
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .toEntity();
+
     }
 
 
@@ -98,35 +101,45 @@ public class UserController {
     )
     @DeleteMapping("/hard-delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable(name = "id") @Min(1) Long id) {
-        log.info("---------- delete user by id -------------");
-
-        try{
-            userService.deleteUser(id);
-        }
-        catch (Exception e){
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
+        userService.deleteUser(id);
         return ApiResponse.build()
-               .withMessage("hard-delete users successfully")
-               .toEntity();
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withSuccess(true)
+                .withMessage(MessageCode.SUCCESS.getMessage())
+                .toEntity();
+
     }
 
 
     @Operation(
             summary = "get user by id",
-            description = "Api get user information"
+            description = "Api get user information",
+            parameters = {@Parameter(name = "id", description = "the id of the user",example = "1")}
     )
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable(name = "id") @Min(1) Long id) {
-        log.info("---------- get user by id -------------");
 
         return ApiResponse.build()
-                .withMessage("get user successfully")
+                .withCode(MessageCode.SUCCESS.getCode())
+                .withSuccess(true)
+                .withMessage(MessageCode.SUCCESS.getMessage())
                 .withData(userService.getUserById(id))
                 .toEntity();
 
+    }
+
+    @Operation(
+            summary = "change password",
+            description = "This API use to change password"
+    )
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> refresh(@RequestBody @Valid ChangePasswordRequest request, Long id){
+        userService.changePassword(request, id);
+
+        return ApiResponse.build()
+                .withSuccess(true)
+                .withCode(MessageCode.SUCCESS.getCode())
+                .toEntity();
     }
 
 }

@@ -1,91 +1,67 @@
 package com.zev.studentmanager.service.impl;
 
+import com.zev.studentmanager.dto.request.ChangePasswordRequest;
+import com.zev.studentmanager.dto.request.RegisterRequest;
 import com.zev.studentmanager.dto.request.UpdateUserInfoRequest;
 import com.zev.studentmanager.dto.response.PageResponse;
 import com.zev.studentmanager.dto.response.UserDto;
-import com.zev.studentmanager.entity.Address;
 import com.zev.studentmanager.entity.User;
-import com.zev.studentmanager.mapper.AddressMapper;
+import com.zev.studentmanager.enums.MessageCode;
 import com.zev.studentmanager.mapper.UserMapper;
-import com.zev.studentmanager.repository.AddressRepository;
+import com.zev.studentmanager.repository.RoleRepository;
 import com.zev.studentmanager.repository.UserRepository;
 import com.zev.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import javax.management.relation.RoleNotFoundException;
 
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Log4j2
 public class UserServiceImpl implements UserService {
 
+
     private final UserRepository userRepository;
-    private final UserMapper userMapper = new UserMapper();
+    private final UserMapper userMapper;
 
-    private final AddressRepository addressRepository;
 
-    private final AddressMapper addressMapper = new AddressMapper();
     @Override
     public UserDetailsService userDetailsService() {
-
         log.info("----- get user details -----");
-        return username -> userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("user not found"));
-
-
+        return username -> userRepository.findByUsername(username)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found:" + username)
+                );
     }
 
     @Override
+    @PostAuthorize("returnObject.username == authentication.name")
     public void updateUserInformation(UpdateUserInfoRequest request, Long userId) {
-        try{
-            log.info("----- update user by id: {} -----", userId);
-            var user = getById(userId);
-
-            // just set input not null
-            if (StringUtils.hasLength(request.getEmail())){
-                user.setEmail(request.getEmail());
-            }
-            if (StringUtils.hasLength(request.getFirstName())){
-                user.setFirstName(request.getFirstName());
-            }
-            if (StringUtils.hasLength(request.getLastName())){
-                user.setLastName(request.getLastName());
-            }
-            if (request.getDateOfBirth() != null){
-                user.setDateOfBirth(request.getDateOfBirth());
-            }
-            if (StringUtils.hasLength(request.getGender())){
-                user.setGender(request.getGender());
-            }
-            if (StringUtils.hasLength(request.getPhone())){
-                user.setPhone(request.getPhone());
-            }
-            if (request.getAddresses() != null){
-                saveAddressesToUser(request.getAddresses(), user);
-            }
-
-            userRepository.save(user);
-            log.info("----- update user successfully -----");
-        }
-        catch (Exception e){
-            log.error("error - {}",e.getMessage());
-            throw new RuntimeException(e);
-        }
+        var user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found: "+ userId)
+                );
+        updateInfoUser(request, user);
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        log.info("----- get user by id: {} -----", id);
-        return userMapper.toDto(getById(id));
-
+        log.info("----- get user by id: {}", id);
+        var user = userRepository.findById(id)
+                .orElseThrow(
+                    () -> new UsernameNotFoundException("user not found: " + id)
+                );
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -95,20 +71,19 @@ public class UserServiceImpl implements UserService {
             var user = getById(id);
             user.setDeleted(true);
             userRepository.save(user);
-            log.info("----- soft delete user successfully -----");
         }
         catch (Exception e){
-            throw new RuntimeException(e);
+            throw new RuntimeException(MessageCode.FAILURE.getMessage() + e);
         }
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ALL')")
     public void deleteUser(Long id) {
         try{
             log.info("----- delete user by id: {} -----", id);
             var user = getById(id);
             userRepository.delete(user);
-            log.info("----- delete user successfully -----");
         }
         catch (Exception e){
             throw new RuntimeException(e);
@@ -117,15 +92,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<?> getUsers(Pageable pageable) {
-        log.info("----- get users-------");
-
-        List<UserDto> users = userRepository.findAll(pageable).stream().map(userMapper::toDto).toList();
-
+        var users = userRepository.findAll(pageable).stream().toList();
         return PageResponse.builder()
-                .items(users)
+                .total(users.size())
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
-                .total(users.size())
+                .items(userMapper.toDto(users))
                 .build();
     }
 
@@ -133,33 +105,46 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<?> getActiveUsers(Pageable pageable) {
-
-        log.info("---------------- get active users ----------------");
-        var users = userRepository.findUsersDeletedEqualsFalse(pageable).stream().map(userMapper::toDto).toList();;
-
+        var users = userRepository.findUsersDeletedEqualsFalse(pageable).stream().toList();
         return PageResponse.builder()
-                .items(users)
+                .total(users.size())
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
-                .total(users.size())
+                .items(userMapper.toDto(users))
                 .build();
     }
 
+    @Override
+    @PostAuthorize("returnObject.username == authentication.name")
+    public void changePassword(ChangePasswordRequest request, Long userId) {
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("user not found: "+ userId)
+                );
+
+        user.setPassword(request.getNewPassword());
+
+        userRepository.save(user);
+    }
+
+
     private User getById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found: "+ id));
     }
 
-    private void saveAddressesToUser(Set<Address> addresses, User user) {
-        try{
-            log.info("------------ Saving addresses ---------------");
-            addresses.forEach(address -> address.setUser(user));
-            addressRepository.saveAll(addresses);
-            user.setAddresses(addresses);
-        }catch (Exception e){
-            log.error("error - {}", e.getMessage());
-
-            throw new RuntimeException(e);
-        }
+    private void updateInfoUser(UpdateUserInfoRequest  request, User user) {
+        // update user information here
+        user.setAddress(request.getAddress());
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhone(request.getPhone());
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setGender(request.getGender());
+        userRepository.save(user);
     }
+
+
 
 }

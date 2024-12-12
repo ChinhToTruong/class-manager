@@ -1,11 +1,18 @@
-package com.zev.studentmanager.exception;
+package com.zev.studentmanager.enums;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 
 @Getter
-public enum ErrorCode {
+public enum MessageCode {
+
+    // common message
+    SUCCESS(200, "success ",HttpStatus.OK),
+    FAILURE(2000, "failed ", HttpStatus.BAD_REQUEST),
+
+
+
+    //exceptions
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error",HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY(1001, "Uncategorized error", HttpStatus.BAD_REQUEST),
     USER_EXISTED(1002, "User existed", HttpStatus.BAD_REQUEST),
@@ -14,9 +21,10 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
+    RESOURCE_NOT_FOUND(1008, "Resource not found", HttpStatus.NOT_FOUND)
             ;
 
-    ErrorCode(int code, String message, HttpStatusCode statusCode) {
+    MessageCode(int code, String message, HttpStatus statusCode) {
         this.code = code;
         this.message = message;
         this.statusCode = statusCode;
@@ -24,5 +32,5 @@ public enum ErrorCode {
 
     private final int code;
     private final String message;
-    private final HttpStatusCode statusCode;
+    private final HttpStatus statusCode;
 }
